@@ -31,6 +31,7 @@ BeanSurvey<-mutate(BeanSurvey,GENDERHH=ifelse(is.na(GENDERHH),"male",as.characte
 
 ## Overview
 
+test
 Doing the standard statistics hypothesis tests in R is pretty easy! In this workbook we are going to look at how you can do some very commonly used tests - t-test and chi-square test, as well as the non-parametric equivalents which you can use in cases when the assumptions are not met. We are going to assume that you have probably come across these methods before, but you also may want to follow some of the linked resources for a refresher.
 
 In general these simple tests can be a useful starting point, but are limited in what they can tell you. So in the next module of the course we will talk more about statistical modeling, which let's you extend upon the principles from these statistical tests and build on them to be applicable in more scenarios and can be applied in much more interesting ways than just these simple tests.
