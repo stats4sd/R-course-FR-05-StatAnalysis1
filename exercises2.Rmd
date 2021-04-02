@@ -1,15 +1,13 @@
 
-## Module 6: Exercises
+## Module 6: Exercices
 
-In these exercises we are going to look at conducting some statistical hypothesis tests in R, using a new dataset. We have looked enough at the `BeanSurvey` data for now! 
+Dans ces exercices, nous allons voir comment effectuer des tests statistiques avec R, en utilisant un nouveau jeu de données. Nous avons suffisamment étudié les données de `BeanSurvey` pour le moment ! 
 
-We have explored a number of questions graphically, and with summary statistics, and now we can conduct hypothesis tests to tell us if we are able to conclude that there are statistically significant differences.
+Si vous avez ouvert ce fichier exercices.Rmd sans avoir d'abord décompressé tous les fichiers dans un seul dossier, et sans avoir créé un fichier de projet pour ces exercices, arretez et faites d'abord cela !
 
-If you have opened up this file without first unzipping all of the files into a single folder, and creating a Project file for this exercises, then please stop right now. Do those things!
+Maintenant que vous êtes de retour, vous pouvez installer tous les packages utilisés dans cette session que vous n'avez peut-être pas déjà. Vous devriez déjà avoir `ggplot2` et `dplyr` ; mais vous aurez probablement besoin d'installer le package `janitor`.
 
-Now you are back you can install any of the libraries used in this session that you might not already have. You should already have `ggplot2` and `dplyr`; but you probably will now also need to install `janitor`.
-
-Once you have done that, you are now ready to go and running the chunk below should load the libraries and import the data to be used in these exercises.
+Une fois que vous avez fait cela, vous êtes prêt à exécution le bloc de code ci-dessous, qui devrait charger les packages et importer les données qui seront utilisées dans ces exercices.
 
 ```{r}
 library(ggplot2)
@@ -20,24 +18,24 @@ fallowsurvey<-read.csv("fallowsurvey.csv")
 
 ```
 
-## Data
+## Données
 
-This data is from a much larger survey of Kenyan farmers looking at whether they kept their fields fallow in any of the three previous years. The variables included are:
-*ID* - An ID for the farmer
-*Fallow_yr1* - Whether the farmer left their plot fallow in the the past season
-*Fallow_yrw* - Whether the farmer left their plot fallow two seasons previously
-*Fallow_yre* - Whether the farmer left their plot fallow three seasons previously
-*wealth* - An index of wealth based on what assets the farmer owns - larger scores equal more wealth
-*hheducation* - education level of the head of household
-*adults* - Number of adults in the household
-*ethnicity* - Ethnicity of the head of household
-*hhgender* - Gender of the head of household
+Ces données sont issues d'une enquête beaucoup plus vaste menée auprès d'agriculteurs au kenya, visant à déterminer s'ils ont laissé leurs champs en jachère au cours de l'une des trois années précédentes. Les variables incluses sont :
+*ID* - Un identifiant unique pour chaque agriculteur
+*Fallow_yr1* - Est-ce que l'agriculteur a laissé sa parcelle en jachère au cours de la dernière saison ? (Yes/No)
+*Fallow_yr2* - Est-ce que l'agriculteur a laissé sa parcelle en jachère deux saisons auparavant ? (Yes/No)
+*Fallow_yr3* - Est-ce que l'agriculteur a laissé sa parcelle en jachère trois saisons auparavant ? (Yes/No)
+*wealth* - Un indice de richesse basé sur les actifs que possède l'agriculteur - un score plus élevé correspond à une plus grande richesse.
+*hheducation* - Niveau d'éducation du chef de ménage.
+*adults* - Nombre d'adultes dans le ménage.
+*ethnicity* - Ethnicité du chef de ménage.
+*hhgender* - Sexe du chef de ménage
 
-## Exercise 1
+## Exercice 1
 
-Firstly we are going to consider whether there is a relationship between the farmer's wealth status and the ethnicity of the head of household.
+Tout d'abord, nous allons examiner s'il existe une relation entre le la richesse de l'agriculteur et l'appartenance ethnique du chef de ménage
 
-*Question 1.1: Produce summary statistics showing the mean and standard deviation of wealth for each of the two ethnicities, using `group_by` and `summarise`*
+*Question 1.1 : Produire des résumés statistiques montrant la moyenne et l'écart-type de lindice de richesse pour chacune des ethnies, en utilisant `group_by` et `summarise`*.
 
 ```{r}
 fallowsurvey %>%
@@ -45,59 +43,60 @@ fallowsurvey %>%
 
 ```
 
-*Question 1.2: Produce boxplots showing the distribution of wealth by ethnicity*
+*Question 1.2 : Produire un graphique en boites a moustache (boxplot) montrant la distribution de l'indice de richesse pour chaque ethnie*.
 
 ```{r}
 
 ```
 
-*Question 1.3: Carry out a t-test to investigate if there is a significant difference between wealth scores of the two ethnicities. Interpret the results*
+*Question 1.3 : Effectuez un test t pour vérifier s'il existe une différence significative entre les scores de richesse des deux ethnies. Interprétez les résultats*.
 
 ```{r}
 
 ```
 
-## Exercise 2
+## Exercice 2
 
-Now let us consider the relationship between ethnicity and whether the plot had been left fallow. 
+Examinons maintenant la relation entre l'ethnicité et le fait que la parcelle ait été laissée en jachère. 
 
 
-The recommendation for fallow plots is to leave the plot fallow in at least one out of 3 seasons. So we are not so interested to look at whether the plot was left fallow in the last season, or two seasons ago, but we are interested in if it has been left fallow at all. So we will need to create a new variable first!
-*Question 2.1: Use mutate to calculate a new variable called "Fallow_Last3" which takes the value "Yes" if the plot has been left fallow in any of the last three years and takes the value "No" if the plot was not left fallow in any of the last three years*
+La recommandation pour les parcelles en jachère est de laisser la parcelle en jachère pendant au moins une saison sur trois. Nous ne sommes donc pas intéressés à savoir si la parcelle a été laissée en jachère au cours de la dernière saison, ou il y a deux saisons, mais nous sommes intéressés à savoir si elle a été laissée en jachère tout court. Nous devrons donc d'abord créer une nouvelle variable !
 
-```{r}
-
-```
-
-*Question 2.2: Piping from the last step, and using the variable you created in the last step, calculate the percentages of farmers within each ethnicity who left their plot fallow in at least one of the last seasons using the `tabyl` and `adorn_percentages` functions*
-
+*Question 2.1 : Utilisez mutate pour calculer une nouvelle variable appelée "Fallow_Last3" qui prend la valeur "Oui" si la parcelle a été laissée en jachère au cours de l'une des trois dernières années et prend la valeur "Non" si la parcelle n'a pas été laissée en jachère au cours de l'une des trois dernières années*.
 
 ```{r}
 
 ```
 
-*Question 2.3: Conduct a chi-square test to determine if there is a significant relationship between whether the farmer has left their plot fallow and the ethnicity of the head of household*
-
-```{r}
-
-```
-
-## Exercise 3
-
-Now consider whether there is a relationship between education status of the head of household and whether the plot was left fallow, using the variable you calculated in question 2.1.
-Produce some summary statistics and then conduct an appropriate hypothesis test.
-You might notice a problem this time with conducting the chi-square test! Consider what would be an appropriate way of remedying this problem using one of the three options discussed in the workbook: `filter` to remove categories, `mutate` and `recode` to combine categories, or `fisher.test` to use a non-parametric test
+*Question 2.2 : En partant de la dernière étape, et en utilisant la variable que vous venez de créer, calculez les pourcentages d'agriculteurs de chaque ethnie qui ont laissé leur parcelle en jachère pendant au moins une des dernières saisons en utilisant les fonctions `tabyl()` et `adorn_percentages()` *.
 
 
 ```{r}
 
 ```
 
+*Question 2.3 : Effectuez un test de khi-deux pour déterminer s'il existe une relation significative entre le fait que l'agriculteur ait laissé sa parcelle en jachère et l'appartenance ethnique du chef de ménage*
+
+```{r}
+
+```
+
+## Exercice 3
+
+Examinez maintenant s'il existe une relation entre le niveau d'éducation du chef de ménage et le fait que la parcelle ait été laissée en jachère, en utilisant la variable que vous avez calculée à la question 2.1.
+Produisez des résumés statistiques, puis effectuez un test statistique du khi-deux approprié.
+Vous remarquerez peut-être un problème avec le test effectué. Réfléchissez à la manière appropriée de remédier à ce problème en utilisant l'une des trois options présentées dans le tutoriel : `filter` pour supprimer des catégories, `mutate` et `recode` pour combiner des catégories, ou `fisher.test` pour utiliser un test non-paramétrique.
 
 
-## Exercise 4
+```{r}
 
-Finally let's consider the relationship between wealth and the fallow status of the plot, again using the "Fallow_Last3" variable you created in exercise 2. Produce summary statistics and plots, and then choose an appropriate statistical test to investigate the relationship and interpret the results. Consider if what you have done makes sense.
+```
+
+
+
+## Exercice 4
+
+Enfin, examinons la relation entre la richesse et l'état de jachère de la parcelle, en utilisant à nouveau la variable "Fallow_Last3" que vous avez créée dans l'exercice 2. Produisez des résumés statistiques et graphiques, puis choisissez un test statistique approprié pour étudier la relation et interprétez les résultats. Vérifiez si ce que vous avez fait a du sens.
 
 ```{r}
 

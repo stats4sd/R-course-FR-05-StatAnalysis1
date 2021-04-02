@@ -1,5 +1,5 @@
 ---
-title: "Standard Statistical Hypothesis Tests in R"
+title: "Tests statistiques simples avec R"
 output: 
   learnr::tutorial:
     progressive: true
@@ -7,7 +7,7 @@ output:
     df_print: paged
 runtime: shiny_prerendered
 description: >
-  Hypothesis tests in R.
+  Tests statistiques avec R.
 ---
 
 
@@ -29,53 +29,50 @@ BeanSurvey<-mutate(BeanSurvey,GENDERHH=ifelse(is.na(GENDERHH),"male",as.characte
 ```
 
 
-## Overview
+## Vue d'ensemble
 
-test
-Doing the standard statistics hypothesis tests in R is pretty easy! In this workbook we are going to look at how you can do some very commonly used tests - t-test and chi-square test, as well as the non-parametric equivalents which you can use in cases when the assumptions are not met. We are going to assume that you have probably come across these methods before, but you also may want to follow some of the linked resources for a refresher.
+Effectuer des tests statistiques simples avec R est assez facile. Dans ce tutoriel, nous allons voir comment réaliser certains tests très couramment utilisés - le test t et le test du chi-deux, ainsi que les équivalents non paramétriques que vous pouvez utiliser dans les cas où les hypothèses ne sont pas satisfaites. Nous partons du principe que vous avez probablement déjà rencontré ces méthodes, mais vous pouvez également consulter certaines des ressources liées pour vous rafraîchir la mémoire.
 
-In general these simple tests can be a useful starting point, but are limited in what they can tell you. So in the next module of the course we will talk more about statistical modeling, which let's you extend upon the principles from these statistical tests and build on them to be applicable in more scenarios and can be applied in much more interesting ways than just these simple tests.
+En général, ces tests simples peuvent être un point de départ utile, mais sont limités dans ce qu'ils peuvent vous dire. C'est pourquoi, dans le prochain module du cours, nous parlerons davantage de la modélisation statistique, qui vous permet d'étendre les principes de ces tests statistiques et de les développer pour qu'ils soient applicables dans davantage de situations et puissent être appliqués de manière beaucoup plus intéressante que ces simples tests.
 
-We are going to use the same `BeanSurvey` dataset we looked at earlier in the course to make graphs & data manipulations and we will now extend this into some statistical tests. The data is embedded at the end of this workbook if you want a refresher on what this data contains, and how the variables are named.
+Nous allons utiliser le même jeu de données `BeanSurvey` que nous avons examiné plus tôt dans le cours pour faire des graphiques et des manipulations de données et nous allons maintenant étendre cela à certains tests statistiques. Les données sont intégrées à la fin de ce classeur si vous voulez un rappel sur ce que ces données contiennent, et comment les variables sont nommées.
 
 
-There are lots of resources walking through the basic mechanics of the t-test in R. There is a nice guide [here](https://uc-r.github.io/t_test#twosample)
+Il existe de nombreuses ressources expliquant les mécanismes de base du test t dans R. Vous trouverez un guide intéressant [ici] (https://uc-r.github.io/t_test#twosample).
 
-As you will see, the functions themselves are pretty straightforward. And, you may be pleased to hear, there are not very many new functions to learn about in this module, especially compared to the previous modules!
+Comme vous le verrez, les fonctions elles-mêmes sont assez simples. Et, vous serez peut-être heureux d'apprendre qu'il n'y a pas beaucoup de nouvelles fonctions à apprendre dans ce module, surtout par rapport aux modules précédents !
 
-However, it is extremely important to use these functions in the correct context and know what to do when results are unexpected. One of the best things about R is the ability to create a reproducible workflow using markdown files to store commands, and explanations. And in the videos for this module we talk through one such example - trying to emphasise the process of thinking about what you are doing, and what it means, and how it can be improved. 
-We will learn more about extending this approach from hypothesis tests into more complete statistical models in the next module of this course.
+Cependant, il est extrêmement important d'utiliser ces fonctions dans le bon contexte et de savoir quoi faire lorsque les résultats sont inattendus. L'une des gros avantages avec R est la possibilité d'avoir une methode de travail reproductible en utilisant des fichiers R markdown pour stocker les commandes et les explications. Dans les vidéos de ce module, nous parlons d'un tel exemple, en essayant de mettre l'accent sur la réflexion de ce qui est fait, sur l'interpretation et sur la façon dont on pourrait améliorer le travail. 
+Nous en apprendrons davantage sur l'extension de cette approche des tests d'hypothèse à des modèles statistiques plus complets dans le prochain module de ce cours.
 
 ![](https://youtu.be/LVcmN2OSXY8)
 
-The second part of the video will come later in the workbook!
+La deuxième partie de la vidéo sera présentée plus tard dans le tutoriel.
 
-## t tests
+## Le test t
 
-We can use a two sample t-test when we want to compare the means of a numeric variable across two groups, to determine if the difference is statistically significant.
+Nous pouvons utiliser un test t (ou test de student) lorsque nous voulons comparer les moyennes d'une variable numérique entre deux groupes, afin de déterminer si la différence est statistiquement significative.
 
-So, if we think back to our `BeanSurvey` dataset - we could compare whether the average amount of land owned by male headed households is different to the average amount of land held by female headed households. We should always start by exploring our data first! 
+Ainsi, si nous repensons à notre ensemble de données `BeanSurvey` - nous pourrions chercher à savoir si la superficie moyenne des terrains possédée par les ménages dirigés par des hommes est différente de la superficie moyenne de terrains détenue par les ménages dirigés par des femmes. Nous devrions toujours commencer par explorer nos données ! 
 
-### Preliminary Analysis
+### Analyse préliminaire
 
-Before any formal hypothesis test, always look at summary statistics and plots showing the relationship you are interested in.
+Avant tout test statistique formel, essayez de toujours d'abord explorez les résumés statistiques et les graphiques montrant la relation qui vous intéresse.
 
-And this is the perfect chance to apply and recap all your newly acquired ggplot2! 
+Et c'est l'occasion parfaite d'appliquer et de récapituler toutes vos connaissances sur ggplot2 recemment acquises ! 
 
-*Continue from the code below to match embedded output, to show the means and standard deviations of `LANDAREA` by `GENDERHH`, and the number of observations in each group*
+*Essayez de reproduire les trois sorties suivantes sortie pour montrer 1) les moyennes et les écarts types de `LANDAREA` par `GENDERHH` ainsi que le nombre d'observations dans chaque groupe; 2) l'histogramme de `LANDAREA` pour chaque groupe definie par `GENDERHH`; 3) un graphique en boite a moustache (boxplot) de `LANDAREA` par `GENDERHH`*.
 
-**Summary Statistics of Attractiveness by Gender**
-```{r summarystats, exercise=TRUE,error=TRUE}
-
-```
-
-
+**1) les moyennes et les écarts types de `LANDAREA` par `GENDERHH` ainsi que le nombre d'observations dans chaque groupe**
 ```{r,echo=FALSE,message=FALSE}
 BeanSurvey %>% 
    group_by(GENDERHH) %>%
     summarise(n=n(),mean=mean(LANDAREA,na.rm=T),sd=sd(LANDAREA,na.rm=T))
 ```
 
+```{r summarystats, exercise=TRUE,error=TRUE}
+
+```
 
 
 ```{r summarystats-solution}
@@ -84,20 +81,14 @@ BeanSurvey %>%
     summarise(n=n(),mean=mean(LANDAREA,na.rm=T),sd=sd(LANDAREA,na.rm=T))
 ```
 
-*Now match embedded output, this time to show histograms of `LANDAREA` split by `GENDERHH`, and then some boxplots*
-**Histograms of Long Rains Yield by VILLAGE**
 
-
-
+**2) l'histogramme de `LANDAREA` pour chaque groupe definie par `GENDERHH`**
 ```{r,echo=FALSE,message=FALSE}
 BeanSurvey %>% 
   ggplot(aes(x=LANDAREA))+
     geom_histogram()+
       facet_wrap(~GENDERHH)
 
-BeanSurvey %>% 
-  ggplot(aes(y=LANDAREA,x=GENDERHH))+
-    geom_boxplot()
 ```
 
 ```{r summaryplot, exercise=TRUE}
@@ -111,38 +102,54 @@ BeanSurvey %>%
     geom_histogram()+
       facet_wrap(~VILLAGE)
 
+```
+
+
+**3) un graphique en boite a moustache (boxplot) de `LANDAREA` par `GENDERHH`**
+```{r,echo=FALSE,message=FALSE}
+
 BeanSurvey %>% 
   ggplot(aes(y=LANDAREA,x=GENDERHH))+
     geom_boxplot()
 ```
 
-Looking at the summary stats we can see that the average values are a little higher for male headed households on average as compared to female headed households.
+```{r summaryplot2, exercise=TRUE}
 
-We can see from the boxplots and histograms that generally the distributions of landarea are shifted a little higher for the male headed households, which we can see from the higher shift in the median and quartiles making up the boxes. However, we also see that the distribution is skewed by some large values - most farmers have under 3 acres of land, but there are are a small number with much larger yields. 
+```
 
+```{r summaryplot2-solution}
 
-The plots and summary statistics suggests it looks like a reasonable hypothesis to suggest that male headed households have, on average, more land than female headed households. We can conduct a formal statistical significance test to see if there is sufficient evidence to confirm that hypothesis, or whether the differences which are observing in the data are no larger than we would expect to see by random chance.
+BeanSurvey %>% 
+  ggplot(aes(y=LANDAREA,x=GENDERHH))+
+    geom_boxplot()
+```
 
-### Running the t-test
+En regardant les resumes statistiques, nous pouvons voir que les valeurs moyennes sont un peu plus élevées pour les ménages dirigés par des hommes que pour ceux dirigés par des femmes.
 
-We can use a t-test when we have a continuous numeric variable and we either want to compare whether the average value is significantly different from a fixed reference value (a one sample t-test) or whether the average value is significantly different between two groups (a two sample t-test). In this case we have appropriate data to use - a numeric variable `LANDAREA` and a two-level categorical variable `GENDERHH`.
+Les boxplots et les histogrammes montrent que la distribution de la superficie est généralement un peu plus élevée pour les ménages dirigés par un homme, ce qui se traduit par un déplacement plus important de la médiane et des quartiles dans les cases. Cependant, nous constatons également que la distribution est faussée par certaines grandes valeurs - la plupart des agriculteurs ont moins de 3 acres de terre, mais un petit nombre d'entre eux ont des rendements beaucoup plus élevés. 
 
-The structure of the `t.test` function is that we provide the name of our numeric variable (`LANDAREA`), followed by a tilde (`~`), followed by the name of our 2 level grouping variable (`GENDERHH`). Then we need the name of our data. 
+Les graphiques et les statistiques récapitulatives suggèrent que l'hypothèse selon laquelle les ménages dirigés par un homme ont, en moyenne, plus de terres que les ménages dirigés par une femme, semble raisonnable. Nous pouvons effectuer un test de signification statistique formel pour voir s'il y a suffisamment de preuves pour confirmer cette hypothèse, ou si les différences observées dans les données ne sont pas plus importantes que ce que nous nous attendrions à voir par hasard.
+
+### Exécution du test t
+
+Nous pouvons utiliser un test t lorsque nous avons une variable numérique continue et que nous voulons soit comparer si la valeur moyenne est significativement différente d'une valeur de référence fixe (un test t à un échantillon), soit si la valeur moyenne est significativement différente entre deux groupes (un test t à deux échantillons). Dans ce cas, nous avons des données appropriées à utiliser - une variable numérique `LANDAREA` et une variable catégorielle à deux niveaux `GENDERHH`.
+
+La structure de la fonction `t.test` est que nous fournissons le nom de notre variable numérique (`LANDAREA`), suivi d'un tilde (`~`), suivi du nom de notre variable de regroupement à 2 niveaux (`GENDERHH`). Ensuite, nous avons besoin du nom de nos données. 
 
 ```{r ttest1, exercise=TRUE}
 t.test(LANDAREA~GENDERHH,data=BeanSurvey)
 ```
 
-In this case we would conclude, from the p-value of 0.296 that there is no evidence to be able to conclude that there is a significant difference in the mean values of land area based on gender of head of household.
+Dans ce cas, nous conclurions, à partir de la valeur p de 0,2496 qu'il n'y a pas de preuve permettant de conclure qu'il existe une différence significative dans les valeurs moyennes de la superficie des terres en fonction du sexe du chef de ménage.
 
-The output also shows us the t-statistic, degrees of freedom and a 95% confidence interval around the difference in the means.
+Le résultat nous montre également la statistique t, les degrés de liberté et un intervalle de confiance de 95 % autour de la différence des moyennes.
 
-It's worth reminding yourself of how p-values work - they are very commonly misunderstood and therefore misinterpreted. There is a great video from Dr Nic about p-values [here](https://www.youtube.com/watch?v=eyknGvncKLw)
+Il est utile de se rappeler comment fonctionnent les valeurs p, car elles sont très souvent mal comprises et donc mal interprétées. Il existe une excellente vidéo du Dr Nic sur les valeurs p [Ici](https://www.youtube.com/watch?v=eyknGvncKLw)
 
 
-With the `t.test` function it is important to note that, unlike most of the functions we have used so far in this course the name of the data comes as the second argument *after* the formula. 
+Avec la fonction `t.test`, il est important de noter que, contrairement à la plupart des fonctions que nous avons utilisées jusqu'à présent dans ce cours, le nom des données vient comme deuxième argument *après* la formule. 
 
-We can use a pipe (`%>%`) to get from the data to the t-test, but we need to use it in a slightly different way. The pipe assumes the first argument of a function is the data, but we can override this. Within `t.test`, or any function where data is not the first argument, after the pipe we can include an argument `data= .`. The `.` denotes to inherit the data coming in from the previous line.
+Nous pouvons utiliser un pipe (`%>%`) pour passer des données au test t, mais nous devons l'utiliser d'une manière légèrement différente. Le pipe suppose que le premier argument d'une fonction est la donnée, mais nous pouvons passer outre. Dans `t.test`, ou dans n'importe quelle fonction où les données ne sont pas le premier argument, après le pipe, nous pouvons inclure un argument `data= .`. Le `.` indique que l'on hérite des données provenant de la ligne précédente.
 
 
 ```{r pipein, exercise=TRUE}
@@ -150,69 +157,85 @@ BeanSurvey %>%
      t.test(YIELD_LR~VILLAGE,data=.)
 
 ```
-And that's it! We shown you how to do a t-test in R...
+Et c'est tout ! Nous vous avons montré comment faire un test t dans R...
 
-... but! There are also other more practical things to consider when running a t-test; whether the hypothesis and the assumptions underlying it are sensible. And we should know what to do if we do encounter anything that makes us question the validity of the methods.
+... mais ! Il y a également d'autres éléments plus pratiques à prendre en compte lors de l'exécution d'un test t : il faut se demander si l'hypothèse et les hypothèses qui la sous-tendent sont raisonnables. Et nous devons savoir quoi faire si nous rencontrons quelque chose qui nous fait douter de la validité des méthodes.
 
-There is actually one assumption you were probably taught about when learning the t test that you do not need to worry about at all when using the `t.test` function in R.
+Il existe en fait une hypothèse que l'on vous a probablement enseignée lors de l'apprentissage du test t et dont vous n'avez pas à vous soucier du tout lorsque vous utilisez la fonction `t.test` dans R.
 
-### Assumption 0: Equal Variance 
+### Hypothèse 0 : Egalité des variances 
 
-The result you obtain by default from the `t.test` function is not exactly the same as you would see in other software packages, because R has slightly different default settings.
+Le résultat que vous obtenez par défaut à partir de la fonction `t.test` n'est pas exactement le même que celui que vous verriez dans d'autres logiciels, car R a des paramètres par défaut légèrement différents.
 
-You probably learnt that you need to have approximately "equal variance" within your two groups for a t-test to be valid. However, by default, R uses a "Welch" t-test. This is a modification to the classic t-test which does not require equal variance. 
+Vous avez probablement appris que vous devez avoir approximativement une "variance égale" dans vos deux groupes pour qu'un test t soit valide. Cependant, par défaut, R utilise un test t de "Welch". Il s'agit d'une modification du test t classique qui ne nécessite pas une variance égale. 
 
-There is no real reason not to use this modification. If the variances are exactly equal then both the classic and Welch t-tests will provide identical results; and when the variances are very similar the differences between the results are trivial.
+Il n'y a aucune raison réelle de ne pas utiliser cette modification. Si les variances sont exactement égales, les tests t classique et de Welch fourniront des résultats identiques ; et lorsque les variances sont très similaires, les différences entre les résultats sont insignifiantes.
 
-But if the variances are not similar the classic t-test results would not be valid where the Welch t-test results would be. Looking at the summary statistics and plots we produced earlier it does appear that the variances may not be equal - the standard deviation is quite a bit larger for male headed households compared to female headed households. So in this case we would almost certainly want to keep with the default from R and use the Welch version of the t-test.
+Mais si les variances ne sont pas similaires, les résultats du test t classique ne seront pas valides alors que ceux du test t de Welch le seront. En examinant les statistiques récapitulatives et les graphiques que nous avons produits précédemment, il semble que les variances ne soient pas égales - l'écart type est beaucoup plus important pour les ménages dirigés par des hommes que pour ceux dirigés par des femmes. Ainsi, dans ce cas, nous voudrions presque certainement conserver la valeur par défaut de R et utiliser la version de Welch du test t.
 
-But, if you really love the classic t-test, or just want to confident that the results match those you might have seen running the same code from other software  then you can add the argument `var.equal = TRUE` into the code
+Mais, si vous aimez vraiment le test t classique, ou si vous voulez simplement être sûr que les résultats correspondent à ceux que vous avez pu voir en exécutant le même code dans un autre logiciel, alors vous pouvez ajouter l'argument `var.equal = TRUE` dans le code
 
 ```{r ttest, exercise=TRUE}
 t.test(LANDAREA~GENDERHH,data=BeanSurvey,var.equal=TRUE)
 
 ```
 
-As you can see, if you go back and compare the results to the previous output, the value of the t-statistic, and degrees of freedom change very slightly, and so does the p-value. In this case though, it would have made no substantial difference to our conclusions, despite the fairly large change in the p-value. In other cases it might be the difference between a significant and a non-significant result, so we should think carefully before assuming that the equal variance assumption is valid.
+Comme vous pouvez le voir, si vous revenez en arrière et comparez les résultats à la sortie précédente, la valeur de la statistique t et les degrés de liberté changent très légèrement, tout comme la valeur p. Dans ce cas, cela n'aurait pas fait de différence substantielle dans nos conclusions, malgré le changement assez important de la valeur p. Dans ce cas, cependant, cela n'aurait pas fait de différence substantielle dans nos conclusions, malgré le changement assez important de la p-value. Dans d'autres cas, cela pourrait faire la différence entre un résultat significatif et un résultat non significatif, et nous devrions donc bien réfléchir avant de supposer que l'hypothèse de variance égale est valide.
 
-### Assumption 1: Normality
+### Hypothèse 1 : Normalité
 
-We also have another assumption that we have approximate normality of the response with each group. The key word here though is 'approximate';  a lot of people can get very hung up on whether they have a perfectly normal distributions. In fact, as we increase the size of our data, the t-test will still be valid with increasingly non-normal looking distributions. This is known as the 'central limit theorem'.
+Nous avons également une autre hypothèse selon laquelle nous avons une normalité approximative de la réponse pour chaque groupe. Le mot clé ici est "approximatif" ; beaucoup de gens peuvent se demander s'ils ont une distribution parfaitement normale. En fait, à mesure que nous augmentons la taille de nos données, le test t reste valide avec des distributions d'apparence de moins en moins normales. C'est ce qu'on appelle le "théorème de la limite centrale".
 
-Again, Dr Nic, is on call with a video about this [here](https://www.youtube.com/watch?v=_YOr_yYPytM&ab_channel=DrNic%27sMathsandStats)
+Une fois de plus, le Dr Nic est de garde avec une vidéo à ce sujet. [ici](https://www.youtube.com/watch?v=_YOr_yYPytM&ab_channel=DrNic%27sMathsandStats)
 
-It is usually worth checking the histogram to check that we have a roughly symmetrical distribution, which is unimodal. 
+Il est généralement utile de vérifier l'histogramme pour s'assurer que nous avons une distribution à peu près symétrique, c'est-à-dire unimodale. 
 
-There are formal hypothesis tests we could use to 'test' normality, that some people might teach you about. But these are completely useless within this context.
+Il existe des tests d'hypothèse formels que l'on peut utiliser pour 'tester' la normalité et que certaines personnes peuvent vous apprendre. Mais ils sont totalement inutiles dans ce contexte.
 
-There is no assumption requiring 'exact' normality. And using the tests of normality, the more data that we have the more likely we are able to identify that something is not 'exactly' normal. This is the exact opposite of what we need to satisfy this assumption of the t-test, because of the central limit theorem!
+Il n'existe aucune hypothèse exigeant une normalité 'exacte'. Et en utilisant les tests de normalité, plus nous disposons de données, plus nous avons de chances d'identifier que quelque chose n'est pas 'exactement' normal. C'est exactement le contraire de ce dont nous avons besoin pour satisfaire cette hypothèse du test t, en raison du théorème de la limite centrale !
 
-So simply visually inspecting the distributions from a histogram, is usually sufficient for us when we consider if our data can meet this assumption.
+Ainsi, une simple inspection visuelle des distributions à partir d'un histogramme est généralement suffisante pour nous permettre de déterminer si nos données répondent à cette hypothèse.
 
-In this particular case we probably do not have enough data to be able to invoke the central limit theorem. And the histograms we produced earlier suggested a very substantial skew in the data. So we should consider possible alternatives. 
+Dans ce cas particulier, nous n'avons probablement pas assez de données pour pouvoir invoquer le théorème de la limite centrale. Et les histogrammes que nous avons produits précédemment suggéraient une distorsion très importante des données. Nous devons donc envisager des alternatives possibles. 
 
-### Non-Parametric Alternative: Wilcoxon Test
+### Alternative non paramétrique : Test de Wilcoxon
 
-A common solution to this problem would be to use a non-parametric test, like the Wilcoxon rank sum test, also known as the Mann-Whitney U test.
+Une solution courante à ce problème serait d'utiliser un test non paramétrique, comme le test de la somme des rangs de Wilcoxon, également connu sous le nom de test U de Mann-Whitney.
 
-Instead of testing whether the mean values differ between the groups, instead this considers whether the distribution of incomes is shifted for males as compared to females, rather than whether the mean value is different. 
+Au lieu de vérifier si les valeurs moyennes diffèrent entre les groupes, ce test examine si la distribution des revenus est modifiée pour les hommes par rapport aux femmes, plutôt que de vérifier si la valeur moyenne est différente. 
 
-This works by ranking the values in each group and comparing the average ranks in the two groups. This makes it robust to all sorts of strange looking distributions, because the maximum value can never be more than one unit higher than the next highest value. 
+Cela fonctionne en classant les valeurs dans chaque groupe et en comparant les rangs moyens dans les deux groupes. Cela permet de résister à toutes sortes de distributions étranges, car la valeur maximale ne peut jamais être supérieure de plus d'une unité à la valeur supérieure suivante. 
 
-However, it does have less statistical power to detect differences between groups than a t-test, which is why the t-test is often preferred.
+Cependant, il a moins de puissance statistique pour détecter les différences entre les groupes qu'un test t, c'est pourquoi le test t est souvent préféré.
 
-Luckily, within R, the code for `wilcox.test` function is almost identical to what we have seen already with `t.test`. So switching to a non-parametric test is simple! We just change `t.` to `wilcox.`.
+Heureusement, dans R, le code de la fonction `wilcox.test` est presque identique à celui que nous avons déjà vu avec `t.test`. Ainsi, passer à un test non-paramétrique est simple ! Nous changeons simplement `t.` par `wilcox.`.
 
 ```{r wilcox1,exercise=TRUE}
   wilcox.test(LANDAREA~GENDERHH,data=BeanSurvey)
 ```
 
-And here we obtain a similar result with a p-value of p=0.3469 suggesting we have no evidence against the null hypothesis that distribution of land area for males is the same as incomes for females. So this provides further reinforcement of our initial conclusion from the t-test.  
+Et ici, nous obtenons un résultat similaire avec une valeur p de p=0,3469 suggérant que nous n'avons aucune preuve contre l'hypothèse nulle selon laquelle la distribution de la superficie des terres pour les hommes est la même que celle des revenus pour les femmes. Cela renforce donc notre conclusion initiale du t-test.  
 
-Note in the output that the hypothesis is described in the output as "location shift" - this is another way of considering the 'mean of the ranks'. Another way of framing it for this specific test would be that our significant result suggests that males are more likely to have incomes which are higher than the median income. 
-Because of the existence of ties, the Wilcoxon test does not directly compare the median values. In the video, you will have seen an example where the medians of the two groups are the same but the Wilcoxon test provides a significant result.
+Notez que l'hypothèse est décrite dans le résultat comme un "changement de localisation" - c'est une autre façon de considérer la "moyenne des rangs". Une autre façon de formuler l'hypothèse pour ce test spécifique serait que notre résultat significatif suggère que les hommes sont plus susceptibles d'avoir des revenus supérieurs au revenu médian. 
 
-You can see a better idea of how the Wilcoxon test works by using the `rank()` function to rank the values and then calculate the mean of the ranks and then pipe into a plot or summary statistics.
+En raison de l'existence de liens, le test de Wilcoxon ne permet pas de comparer directement les valeurs médianes. Dans la vidéo, vous aurez vu un exemple où les médianes des deux groupes sont les mêmes mais où le test de Wilcoxon fournit un résultat significatif.
+
+Vous pouvez vous faire une meilleure idée du fonctionnement du test de Wilcoxon en utilisant la fonction `rank()` pour classer les valeurs, puis calculer la moyenne des rangs et la pipe dans un graphique ou un résumé statistique.
+
+La fonction `rank()` est assez simple, si nous fournissons un vecteur de nombres, elle donnera le rang 1 au plus petit, 2 au plus petit suivant et ainsi de suite.
+
+
+```{r ranksimple,exercise=TRUE}
+
+some_numbers<-c(45,1,100,8)
+
+some_numbers
+rank(some_numbers)
+
+```
+
+Nous pouvons donc ajouter les rangs de `LANDAREA` dans une nouvelle colonne de nos données en utilisant `mutate` et ensuite étudier les statistiques récapitulatives sur cette nouvelle variable de rang pour mieux comprendre la comparaison effectuée dans le test de Wilcoxon.
+
 
 ```{r rank2,exercise=TRUE}
 BeanSurvey %>%
@@ -237,16 +260,16 @@ BeanSurvey %>%
       summarise(mean(land_rank))
 ```
 
-The smallest value is ranked as 1, the second smallest value ranked as 2 and so on. When we compare the distribution of ranks we can see the ranks are a little higher (i.e. larger area) for the male headed households, but the difference is not large enough to conclude that this difference is larger than what we would see by chance.
+La plus petite valeur est classée 1, la deuxième plus petite valeur est classée 2 et ainsi de suite. Lorsque nous comparons la distribution des rangs, nous pouvons constater que les rangs sont un peu plus élevés (c'est-à-dire que la surface est plus grande) pour les ménages dirigés par un homme, mais la différence n'est pas assez importante pour conclure que cette différence est plus grande que ce que nous pourrions voir par hasard.
 
-If you haven't come across it before, you can read more about the Wilcoxon rank sum test [here](https://www.stat.auckland.ac.nz/~wild/ChanceEnc/Ch10.wilcoxon.pdf). 
+Si vous ne l'avez pas encore rencontré, vous pouvez en savoir plus sur le test de la somme des rangs de Wilcoxon [ici](https://www.stat.auckland.ac.nz/~wild/ChanceEnc/Ch10.wilcoxon.pdf). 
 
-### Assumption 2: Independence
+### Hypothèse 2 : Indépendance
 
-Probably the most important assumption to consider is whether or not the observations are independent of each other in the two groups. The simplest example where this is not the case when we have paired data.
+Probablement, l'hypothèse la plus importante à considérer est de savoir si les observations sont indépendantes les unes des autres dans les deux groupes. L'exemple le plus simple où ce n'est pas le cas est celui des données appariées. Dans ce scénario, nous utiliserions un test t apparié, et cela peut également être réalisé en utilisant `t.test()`. Cependant, nous appliquons cette fonction d'une manière assez différente lorsque nous effectuons le test t apparié, par rapport à l'exemple précédent que nous avons vu, lorsque nous avons appliqué un test t indépendant à deux échantillons.
 
 
-A good example of this would be if we were to compare beans planted in the short rains against beans planted in the long rains.
+Un bon exemple de ceci serait de comparer des haricots plantés pendant des pluies courtes à des haricots plantés pendant des pluies longues. Nous pouvons produire des histogrammes ou des boxplots séparés pour les haricots plantés pendant les longues pluies et les haricots plantés pendant les courtes pluies, en utilisant des appels séparés à `ggplot()`. Parce qu'ils sont dans des variables différentes, nous ne pouvons pas directement les faire correspondre sur le même graphique comme nous l'avons vu auparavant - nous devrions d'abord faire une manipulation supplémentaire des données. Nous en apprendrons davantage à ce sujet dans le dernier module du cours, qui rendra les choses un peu plus claires, mais la production de deux graphiques distincts reste un moyen efficace d'explorer les données ici.  
 
 ```{r pair1,exercise=TRUE ,echo=FALSE}
 ggplot(data=BeanSurvey)+
@@ -254,26 +277,29 @@ ggplot(data=BeanSurvey)+
   geom_boxplot(aes(y=BEANSPLANTED_SR,x=2))+
   scale_x_continuous(breaks=1:2,labels=c("LR","SR"))
 ```
-. We also had to use some different code to what we have seen previously. Because we have multiple variables for the groups, rather than one variable for the outcome and one variable for the grouping factor. So to make this plot I have set the aesthetics within the `geom_()` functions rather than in the `ggplot()` function. We can do this if we want to use different variables for different geometries. In both my calls to `geom_boxplot()` I am setting a constant fixed value for the x axis and then making sure I label this with the   
+. Nous avons également dû utiliser un code différent de celui que nous avons vu précédemment. En effet, nous avons plusieurs variables pour les groupes, plutôt qu'une variable pour le résultat et une variable pour le facteur de regroupement. Pour réaliser ce graphique, j'ai donc défini l'esthétique dans les fonctions `geom_()` plutôt que dans la fonction `ggplot()`. Nous pouvons faire cela si nous voulons utiliser différentes variables pour différentes géométries. Dans mes deux appels à la fonction `geom_boxplot()`, je fixe une valeur constante pour l'axe des x et je m'assure ensuite de l'étiqueter avec la balise.   
 
-Although our boxplots look similar to what we have seen before when comparing male to female headed households there is a key difference here - the same farmers have observations in both the long rains and the short rains.
+Bien que nos boxplots ressemblent à ce que nous avons vu auparavant en comparant les ménages dirigés par des hommes à ceux dirigés par des femmes, il y a une différence clé ici - les mêmes agriculteurs ont des observations à la fois pendant les longues pluies et les courtes pluies.
 
-So while we can calculate mean and standard deviation values like before, we do not need to use `group_by` since the variables are different for each group. 
+Ainsi, bien que nous puissions calculer les valeurs de moyenne et d'écart-type comme auparavant, nous n'avons pas besoin d'utiliser `group_by` puisque les variables sont différentes pour chaque groupe. 
 
 ```{r summ_groups, exercise=TRUE}
 BeanSurvey %>%
   summarise(mean(BEANSPLANTED_LR,na.rm=T),sd(BEANSPLANTED_LR,na.rm=T),
             mean(BEANSPLANTED_SR,na.rm=T),sd(BEANSPLANTED_SR,na.rm=T))
 ```
-With the paired t-test we also using the same `t.test` function, but with a slightly different way of specifying the inputs. It is also not possible to pipe into the paired t-test since none of the arguments are the `data` - we need the two variable names.
+
+Avec le test t apparié, nous utilisons également la même fonction `t.test`, mais avec une manière légèrement différente de spécifier les entrées.
+
+Notez que cette fois, il n'est pas possible de faire un pipe dans le test t par paires car aucun des arguments n'est `data`, à la place nous devons fournir deux noms de variables individuelles. /*Beaucoup de fonctions fonctionnent avec des pipes, mais pas toutes !*/
 
 
 ```{r paired, exercise=TRUE}
 t.test(BeanSurvey$BEANSPLANTED_LR,BeanSurvey$BEANSPLANTED_SR,paired=TRUE)
 ```
-In this case we see that, although we do so more beans planted on average in the long rains, by 1.3kg, we do not have enough evidence at the 5% significance level to conclude that this difference is statistically significant (p=0.0978).
+Dans ce cas, nous constatons que, même si nous plantons en moyenne plus de haricots pendant les longues pluies, soit 1,3 kg, nous n'avons pas suffisamment de preuves au niveau de signification de 5% pour conclure que cette différence est statistiquement significative (p=0,0978).
 
-Again, we may be concerned about the normality assumption. With the paired t-test what we care about is not the distribution of he individual variables but the distribution of the differences within each farmer. So we can use `mutate` to calculate the column of differences and then look at a histogram.
+Une fois encore, nous pouvons être préoccupés par l'hypothèse de normalité. Avec le test t apparié, ce qui nous intéresse n'est pas la distribution des variables individuelles mais la distribution des différences au sein de chaque agriculteur. Nous pouvons donc utiliser `mutate` pour calculer la colonne des différences et ensuite regarder un histogramme.
 
 ```{r pairhist, exercise=TRUE}
 BeanSurvey %>%
@@ -282,37 +308,38 @@ BeanSurvey %>%
       geom_histogram()
 ```
 
-We may be concerned that results are being skewed by the two very high values, so perhaps we could also try the Wilcoxan test again. Luckily this works exactly like before. The `paired` code for `wilcox.test` is the same as the `paired` code for `t.test`, all we need to do is change the function.
+Nous pouvons craindre que les résultats soient faussés par les deux valeurs très élevées, alors nous pourrions peut-être essayer à nouveau le test de Wilcoxan. Heureusement, cela fonctionne exactement comme avant. Le code `paired` de `wilcox.test` est le même que le code `paired` de `t.test`, il suffit de changer la fonction.
 
+Nous pourrions craindre que les résultats soient faussés par les deux valeurs très élevées /*et, une fois encore, nous ne disposons pas d'un jeu de données très important et nous ne pouvons donc pas nous fier au théorème de la limite centrale*/. Nous pourrions donc essayer à nouveau le test de Wilcoxon. Et, heureusement, cela fonctionne exactement comme avant en suivant un modèle très similaire. Le code `paired` de `wilcox.test` est le même que le code `paired` de `t.test`, il suffit de changer la fonction.
 
 ```{r pairwilcox, exercise=TRUE}
 wilcox.test(BeanSurvey$BEANSPLANTED_LR,BeanSurvey$BEANSPLANTED_SR,paired=TRUE)
 ```
-Again, we obtain a similar conclusion, we do not have enough evidence to be confident that the difference between the seasons in the data is due to more than just chance.
+Encore une fois, nous obtenons une conclusion similaire : nous n'avons pas suffisamment de preuves pour être sûrs que la différence entre les saisons dans les données est due à autre chose qu'au hasard.
 
-The paired t-test works in this specific scenario, but there are more complicated violations of independence, which can't be so easily fixed. 
+Le test t apparié fonctionne dans ce scénario spécifique, mais il existe des violations plus complexes de l'indépendance, qui ne peuvent pas être corrigées aussi facilement. 
 
-Particularly when we consider having more than two matched observations (e.g. data taken over multiple time points); experimental designs with blocking; or clustered sampling in surveys. 
+C'est notamment le cas lorsque nous envisageons d'avoir plus de deux observations appariées (par exemple, des données prises sur plusieurs points dans le temps), des plans expérimentaux avec blocage ou un échantillonnage en grappes dans les enquêtes. 
 
-In this case the t-test is not at all a sufficient method for analysis! So, you will have to start learning more about statistical modeling to do a good job of analysing your data - and matching the appropriate model structure to your data structure.
+Dans ce cas, le test t n'est pas du tout une méthode d'analyse suffisante ! Vous devrez donc commencer à en apprendre davantage sur la modélisation statistique pour bien analyser vos données - et faire correspondre la structure de modèle appropriée à la structure de vos données.
 
 
 
-## Chi-square test
+## Test du khi-deux
 
 ![](https://youtu.be/a-hVoVnkWSg)
 
-Another common, simple statistical test is the chi-square test. We use this when we want to compare whether or not there is a relationship between two categorical variables.
+Un autre test statistique simple et courant est le test du chi-deux. Nous l'utilisons lorsque nous voulons comparer s'il y a ou non une relation entre deux variables catégorielles.
 
-In this workbook I am going to demonstrate using the `janitor` library for this sort of analysis. This allows you to produce tables, percentages, and chi-square tests in the same tidyverse style as `dplyr`.
+Dans ce cahier d'exercices, je vais vous montrer comment utiliser la bibliothèque `janitor` pour ce type d'analyse. Cela vous permet de produire des tableaux, des pourcentages, et des tests de chi-deux dans le même style tidyverse que `dplyr`.
 
-As this is quite a new package, when you look online there are not many resources which take this particular approach, and you will instead see other functions, like `table` or `prop.table` being used. There is always more than one way to do something in R. For me the `janitor` approach is actually much more straightforward to follow than the traditional approach.
+Comme il s'agit d'un paquetage assez récent, lorsque vous regardez en ligne, il n'y a pas beaucoup de ressources qui adoptent cette approche particulière, et vous verrez plutôt d'autres fonctions, comme `table` ou `prop.table` être utilisées. Il y a toujours plus d'une façon de faire quelque chose en R. Pour moi, l'approche `janitor` est en fait beaucoup plus simple à suivre que l'approche traditionnelle.
 
-So, as an example, we may be interested in the relationship between whether a household sells beans, `SELLBEANS`, and the village `VILLAGE`.
+Ainsi, à titre d'exemple, nous pouvons être intéressés par la relation entre le fait qu'un ménage vende des haricots, `SELLBEANS`, et le village `VILLAGE`.
 
-### Preliminary analysis
+### Analyse préliminaire
 
-The preliminary analysis that we would first look at here would be a cross-tab comparing these variables.  We can pipe `%>%` directly from the data into the `tabyl` function, and then specify the variables to include in our cross-tab.
+L'analyse préliminaire à laquelle nous nous intéresserions d'abord ici serait un tableau croisé comparant ces variables.  Nous pouvons pipeer `%>%` directement à partir des données dans la fonction `tabyl`, et ensuite spécifier les variables à inclure dans notre tableau croisé.
 
 ```{r tabyl1,exercise=TRUE}
 
@@ -321,15 +348,15 @@ BeanSurvey %>%
 
 ```
 
-The first variable will always be placed in the rows of the table, and the second variable will be placed in the columns.
+La première variable sera toujours placée dans les lignes du tableau, et la deuxième variable sera placée dans les colonnes.
 
-Try to interpret those numbers from the frequency table output, and see if you think there is a pattern. It is hard! With cross-tabs it can be pretty difficult to work out if there is a pattern from just the numbers themselves. 
+Essayez d'interpréter ces chiffres à partir de la sortie du tableau de fréquence, et voyez si vous pensez qu'il y a un modèle. C'est difficile ! Avec les tableaux croisés, il peut être assez difficile de déterminer s'il existe un modèle à partir des chiffres eux-mêmes. 
 
-So we often will also look at marginal percentages. That: is for each level of one variable what percentage of respondents fall in the levels of the second variable. 
+C'est pourquoi nous examinons souvent aussi les pourcentages marginaux. Il s'agit de déterminer, pour chaque niveau d'une variable, le pourcentage de répondants qui se situent dans les niveaux de la deuxième variable. 
 
-We refer to these as "row percentages" or "column percentages", depending on whether we are looking at the percentages within each row or percentages within each column. We can pipe the frequency table into the function `adorn_percentages` to investigate this.
+Nous les appelons "pourcentages de ligne" ou "pourcentages de colonne", selon que nous examinons les pourcentages dans chaque ligne ou les pourcentages dans chaque colonne. Nous pouvons pipe le tableau de fréquence dans la fonction `adorn_percentages` pour étudier cela.
 
-I.e. We have two possible questions:  "What percentage of people in Kimbugu sell beans?" This is the 'row percentage' because we are looking within education levels, and education is the row factor. The row percentage is the default option, so we don't need to add anything else to this function.
+Par exemple, nous avons deux questions possibles :  "Quel est le pourcentage de personnes à Kimbugu qui vendent des haricots ?" C'est le "pourcentage de ligne" parce que nous cherchons dans les niveaux d'éducation, et l'éducation est le facteur de ligne. Le pourcentage de ligne est l'option par défaut, nous n'avons donc pas besoin d'ajouter autre chose à cette fonction.
 
 ```{r tabyl2,exercise=TRUE}
 
@@ -337,7 +364,7 @@ BeanSurvey %>%
   tabyl(VILLAGE,SELLBEANS) %>%
     adorn_percentages()
 ```
-By default this shows us proportions rather than nicely formatted percentages. But we can pipe into an extra function, `adorn_pct_formatting` to apply the percentage formatting.
+Par défaut, cela nous montre des proportions plutôt que des pourcentages joliment formatés. Mais nous pouvons faire un pipe dans une fonction supplémentaire, `adorn_pct_formatting` pour appliquer le formatage en pourcentage.
 
 ```{r tabyl3,exercise=TRUE}
 BeanSurvey %>%
@@ -346,9 +373,9 @@ BeanSurvey %>%
       adorn_pct_formatting()
 ```
 
-So we can see that, 54% of people in Kimbugu sell beans, and only 15% of people in Lwala sell beans.
+Nous pouvons donc voir que 54% des habitants de Kimbugu vendent des haricots, et que seulement 15% des habitants de Lwala en vendent.
 
-Or we could ask for "What percentage of people who sell beans live in Kimbugu". We need to add the argument "col" into the `adorn_percentages` function to obtain this.
+Ou nous pourrions demander "Quel est le pourcentage de personnes qui vendent des haricots et qui vivent à Kimbugu". Nous devons ajouter l'argument "col" dans la fonction `adorn_percentages` pour l'obtenir.
 
 ```{r tabyl4,exercise=TRUE}
 BeanSurvey %>%
@@ -357,27 +384,25 @@ BeanSurvey %>%
       adorn_pct_formatting()
 ```
 
-So here we can see that 77% of those who sell beans live in Kimbugu.
+Nous pouvons donc voir ici que 77% de ceux qui vendent des haricots vivent à Kimbugu.
 
-This is not a contradiction! 
+Il ne s'agit pas d'une contradiction ! 
 
-We always have to think carefully about which percentages are being calculating, and thinking about which would make the most sense to interpret. 
+Il faut toujours bien réfléchir aux pourcentages que l'on calcule, et se demander lequel serait le plus logique à interpréter. 
 
-In this case, the row percentages would be likely much more helpful to us than the column percentages. The more interesting question, and probably easier to interpret, would be to compare relative levels of bean selling across the different villages
+Dans ce cas, les pourcentages en ligne nous seraient probablement beaucoup plus utiles que les pourcentages en colonne. La question la plus intéressante, et probablement la plus facile à interpréter, serait de comparer les niveaux relatifs de vente de haricots dans les différents villages.
 
-To make a plot of these results, we would probably want to produce some bar charts. There are a few different ways of making bar charts we learnt about earlier in the course - either stacking or using facets. 
+Pour représenter ces résultats sous forme de graphique, nous voudrions probablement produire des diagrammes à barres. Il existe plusieurs façons de réaliser des diagrammes en bâtons, comme nous l'avons appris plus tôt dans le cours - en les empilant ou en utilisant des facettes. 
 
-*See if you can replicate the plot below, or choose to produce a different graph which shows the relationship between `Education` and `ApproveTrump`.*
-
-```{r ggbar1,exercise=TRUE}
-
-```
-
-
+*Voyez si vous pouvez reproduire le graphique ci-dessous, ou si vous pouvez choisir de produire un graphique différent qui montre la relation entre `VILLAGE` et `SELLBEANS`. N'oubliez pas de modifier l'échelle sur l'axe des x pour le rendre plus lisible !*
 ```{r ggbar0,echo=FALSE}
 ggplot(data=BeanSurvey,aes(group=SELLBEANS,fill=SELLBEANS,y=VILLAGE))+
   geom_bar(position="fill")+
    scale_x_continuous(breaks=c(0,0.2,0.4,0.6,0.8,1),labels=c("0%","20%","40%","60%","80%","100%"))
+```
+
+```{r ggbar1,exercise=TRUE}
+
 ```
 
 ```{r ggbar1-solution}
@@ -386,9 +411,9 @@ ggplot(data=BeanSurvey,aes(group=SELLBEANS,fill=SELLBEANS,y=VILLAGE))+
    scale_x_continuous(breaks=c(0,0.2,0.4,0.6,0.8,1),labels=c("0%","20%","40%","60%","80%","100%"))
 ```
 
-### Running the test
+### Exécution du test
 
-To run the chi square test, we need to have the two-way frequency table exactly as it comes from running the `tabyl()` line of code. This then pipes directly into the `chisq.test` function.
+Pour exécuter le test du chi carré, nous devons avoir le tableau de fréquence à deux voies exactement tel qu'il résulte de l'exécution de la ligne de code `tabyl()`. Ceci est ensuite pipé directement dans la fonction `chisq.test`.
 
 ```{r chi1,exercise=TRUE}
 BeanSurvey %>%
@@ -396,12 +421,12 @@ BeanSurvey %>%
     chisq.test()
 ```
 
-And we obtain a p-value of 0.0095, saying that here we have enough evidence to conclude that farmres in Kimbugu are more likely to sell their beans compared to farmers in Lwala.
+Et nous obtenons une valeur p de 0.0095, ce qui signifie qu'ici nous avons suffisamment de preuves pour conclure que les fermiers de Kimbugu sont plus susceptibles de vendre leurs haricots par rapport aux fermiers de Lwala.
 
 
-Make sure you pipe from the frequency table, created by `tabyl`, into `chisq.test` and not from the table of proportions or formatted percentages, created by either `adorn_percentages` or `adorn_pct_formatting`. 
+Assurez-vous que vous pipez depuis le tableau de fréquence, créé par `tabyl`, dans `chisq.test` et non depuis le tableau de proportions ou de pourcentages formatés, créé par `adorn_percentages` ou `adorn_pct_formatting`. 
 
-Piping from the table of proportions *does not give an error* but the results it returns *are nonsense*.
+Le pipe à partir de la table de proportions *ne donne pas d'erreur* mais les résultats qu'il renvoie *sont absurdes*.
 
 ```{r chi1_fail,exercise=TRUE}
 BeanSurvey %>%
@@ -409,18 +434,18 @@ BeanSurvey %>%
      adorn_percentages() %>%
         chisq.test()
 ```
-Do not do this!
+Ne faites pas ça !
 
 
-### Assumptions
+### Hypothèses
 
-There are two key assumptions for a chi-square test to be valid.
+Il existe deux hypothèses clés pour qu'un test du chi-deux soit valide.
 
-The first is similar to the t-test, and the Wilcox test. We need independent observations. If we don't meet this assumption, we will have to learn more about statistical modelling, rather than use a chi-square test.
+La première est similaire à celle du test t et du test de Wilcox. Nous avons besoin d'observations indépendantes. Si nous ne satisfaisons pas à cette hypothèse, nous devrons en apprendre davantage sur la modélisation statistique, plutôt que d'utiliser un test du chi-deux.
 
 
-There is another assumption we have to meet though related to the sample size within each category.
-Let's try a different question - whether `HHTYPE` is related to the selling of beans. See if you can match the output below:
+Il existe une autre hypothèse que nous devons respecter, liée à la taille de l'échantillon dans chaque catégorie.
+Essayons de répondre à une question différente - si `HHTYPE` est lié à la vente de haricots. Voyez si vous pouvez faire correspondre les résultats ci-dessous :
 
 
 ```{r chi_q1_show,echo=FALSE}
@@ -452,20 +477,39 @@ BeanSurvey %>%
   tabyl(HHTYPE,SELLBEANS) %>%
     chisq.test()
 ```
-We need to have a sufficient number of observations in all possible combinations of the categories of our two variables - in this example we see a warning message that the "chi-square approximation may be incorrect". The general rule of thumb is to have expected frequencies of at least five observations in all combinations - we can clearly see many of the household types have fewer observations than that overall, before we even consider whether they sold beans or not. 
+Nous devons avoir un nombre suffisant d'observations dans toutes les combinaisons possibles des catégories de nos deux variables - dans cet exemple, nous voyons un message d'avertissement indiquant que "l'approximation du chi carré peut être incorrecte". La règle générale est d'avoir des fréquences attendues d'au moins cinq observations dans toutes les combinaisons - nous pouvons clairement voir que de nombreux types de ménages ont moins d'observations que cela dans l'ensemble, avant même de considérer s'ils ont vendu des haricots ou non. 
 
-In this case, we have three options for how to deal with it:  
-1. Use a different variable - like gender of household head. In this case we have it already in our data, but if we did not we could create this using `mutate` and then the `recode` function which is very useful to know about.
+Dans ce cas, nous avons trois options pour traiter ce problème :  
+1. Utiliser une variable différente - comme le sexe du chef de ménage. Dans ce cas, nous l'avons déjà dans nos données, mais si nous ne l'avions pas, nous pourrions la créer en utilisant `mutate` et ensuite la fonction `recode` qui est très utile à connaître.
+
+/*Dans la fonction recode, nous fournissons d'abord la variable que nous recodons, puis nous spécifions comment nous voulons la recoder en suivant le modèle `"existing value" = "new value"`. Ainsi, toutes les catégories à tête féminine sont recodées dans la même nouvelle catégorie. En examinant les données, j'ai découvert que le ménage "autre" était dirigé par un homme. Mais si je recodais les données sans le savoir, il serait probablement plus judicieux de choisir de supprimer cette valeur en utilisant un `filtre`.*/
 
 ```{r chi_q2,exercise=TRUE}
+BeanSurvey %>%
+  mutate(HHTYPE2 = recode(HHTYPE,
+                          "Femme chef de famille mari absent"="Femme chef de famille",
+                           "Femme chef de famille, sans mari"="Femme chef de famille",
+                          "Homme chef de famille, plus d'une épouse"="Homme chef de famille",
+"Homme chef de famille avec une femme"="Homme chef de famille",
+"Homme célibataire"="Homme chef de famille")) %>%
+  filter(HHTYPE2!="Other") %>%
+  tabyl(HHTYPE2,SELLBEANS)
+
+
+```
+
+Lorsque vous utilisez `janitor` et les fonctions `tabyl`, il est souvent judicieux de sauvegarder le `tabyl` initial en tant qu'objet. De cette façon, nous pouvons ensuite passer aux étapes suivantes, à savoir l'examen des pourcentages et la réalisation de tests d'hypothèse, sans avoir à répéter à chaque fois les étapes de manipulation des données.
+
+
+```{r chi_q99,exercise=TRUE}
 tabyl1<-BeanSurvey %>%
   mutate(HHTYPE2 = dplyr::recode(HHTYPE,
-                          "Female headed absentee husband"="Female headed",
-                          "Female headed, no husband"="Female headed",
-                          "Male headed more than one wife"="Male headed",
-                          "Male headed one wife"="Male headed",
-                          "Single man"="Male headed",
-                          "Other"="Male headed")) %>%
+                          "Femme chef de famille mari absent" = "Femme chef de famille",
+                          "Femme chef de famille, sans mari"="Femme chef de famille",
+                          "Homme chef de famille, plus d'une épouse"="Homme chef de famille",
+"Homme chef de famille avec une femme"="Homme chef de famille",
+"Homme célibataire"="Homme chef de famille",
+"Autre"="Homme chef de famille")) %>%
   tabyl(HHTYPE2,SELLBEANS)
 
 tabyl1
@@ -477,11 +521,11 @@ tabyl1 %>%
     chisq.test()
 ```
 
-2. Only include the two common `HHTYPES` which are "Female headed, no husband", and "Male headed one wife". We could restrict this using `filter`
+2. N'incluez que les deux `HHTYPES` communs qui sont "Femme chef de famille, pas de mari", et "Homme chef de famille, une femme". Nous pourrions restreindre ceci en utilisant `filter`.
 
 ```{r chi_q3,exercise=TRUE}
 tabyl2 <- BeanSurvey %>%
-  filter(HHTYPE%in%c("Female headed, no husband","Male headed one wife")) %>%
+  filter(HHTYPE%in%c("Femme chef de famille, pas de mari", "Homme chef de famille, une femme")) %>%
   tabyl(HHTYPE,SELLBEANS)
 
 tabyl2
@@ -492,56 +536,65 @@ tabyl2 %>%
 tabyl2 %>%
     chisq.test()
 ```
-In this case we still do get the same warning - because the frequencies in the "female headed, no husband" category are still a little small.
+Dans ce cas, nous obtenons toujours le même avertissement - parce que les fréquences dans la catégorie "femme chef, sans mari" sont encore un peu faibles.
 
 
-3. Use the non-parametric alternative, the Fisher Exact Test
+3. Utiliser l'alternative non-paramétrique, le test exact de Fisher
 
-Thankfully, much like with the `wilcox.test()` function, we can use a non-parametric test when dealing with two categorical variables by just changing the function name from `chisq.test()` to `fisher.test()`.
+Heureusement, tout comme avec la fonction `wilcox.test()`, nous pouvons utiliser un test non-paramétrique lorsque nous traitons deux variables catégorielles en changeant simplement le nom de la fonction de `chisq.test()` à `fisher.test()`.
 
 ```{r chi_q4,exercise=TRUE}
 BeanSurvey %>%
   tabyl(HHTYPE,SELLBEANS) %>%
     fisher.test()
 ```
-Whichever method we used here we reached the same conclusion - no evidence of relationship between household type and selling beans. But notice that the hypotheses for options 1 and 2 are different. In option one we are comparing differences only in the gender of the head, not consdiering any of the other household composition that exists in the `HHTYPE` variable. And in option 2 we are only comparing the two specific household types.
+Quelle que soit la méthode utilisée ici, nous sommes arrivés à la même conclusion - aucune preuve de la relation entre le type de ménage et la vente de haricots. Mais remarquez que les hypothèses pour les options 1 et 2 sont différentes. Dans l'option 1, nous comparons les différences uniquement dans le sexe du chef de famille, sans tenir compte des autres compositions de ménage qui existent dans la variable `HHTYPE`. Et dans l'option 2, nous ne comparons que les deux types de ménages spécifiques.
 
-Unlike with the `t-test()` we do not change the hypothesis we are testing by using the Fisher test instead. However this test is a lot more computationally intenstive. With even a reasonably small dataset (200 or so observations) you may find that it takes some time for the computer to return the result. This is why the chi-square test is often preferred, since it is always very quick for the computer to calculate!
+Contrairement au `t-test()`, nous ne changeons pas l'hypothèse que nous testons en utilisant le test de Fisher à la place. Cependant, ce test est beaucoup plus coûteux en termes de calcul. Même avec un ensemble de données raisonnablement petit (200 observations environ), vous pouvez constater que l'ordinateur met un certain temps à renvoyer le résultat. C'est pourquoi le test du chi-deux est souvent préféré, car il est toujours très rapide à calculer pour l'ordinateur !
 
 
 
-## More tests?
+## Plus de tests ?
 
-These are the only hypothesis tests we will talk about explicitly in this course, but hopefully you will see that the syntax for producing these tests is not especially complicated. This is true for all commonly used statistical hypothesis tests. 
+Ce sont les seuls tests d'hypothèse dont nous parlerons explicitement dans ce cours, mais nous espérons que vous verrez que la syntaxe pour produire ces tests n'est pas particulièrement compliquée. Ceci est vrai pour tous les tests d'hypothèse statistiques couramment utilisés. 
 
-If you know the simple statistical test you would like to conduct, and your data is in the appropriate format for that test, and the assumptions for that test can be met, it is usually pretty simple to find and then write the R code to carry out the test. There are a lot of statistical tests within base-R!
+Si vous connaissez le test statistique simple que vous souhaitez effectuer, que vos données sont dans le format approprié pour ce test et que les hypothèses de ce test peuvent être satisfaites, il est généralement assez simple de trouver puis d'écrire le code R pour effectuer le test. Il existe un grand nombre de tests statistiques dans base-R !
 
 ```{r,echo=FALSE}
 apropos("\\.test")
 ```
 
-And those are just the tests which are in base-R - there will be many more in various additional libraries!
+Et ce ne sont que les tests qui sont dans base-R - il y en aura beaucoup plus dans diverses bibliothèques supplémentaires !
 
-But 'getting data in the appropriate format', 'checking the assumptions for the test' and 'knowing whether the hypothesis test makes sense for your question' are not so straightforward! It is incredibly easy to do terrible data analysis in R, by skipping straight to the end p-value and churn out meaningless p-values. It is a bit like driving a car - anyone can push the accelerator and make it go forward; but if you don't know how to change the gears or you completely ignore all of the road signs then you are probably going to crash.
+Mais 'obtenir des données dans le format approprié', 'vérifier les hypothèses du test' et 'savoir si le test d'hypothèse a un sens pour votre question' ne sont pas si simples ! Il est incroyablement facile de faire une analyse de données catastrophique dans R, en passant directement à la valeur p finale et en produisant des valeurs p sans signification. C'est un peu comme conduire une voiture : n'importe qui peut appuyer sur l'accélérateur et faire avancer la voiture, mais si vous ne savez pas comment changer les vitesses ou si vous ignorez complètement tous les panneaux de signalisation, vous allez probablement vous écraser.
 
-This is, of course, not just true of R but of any analysis software. However with R there is even less of an excuse for doing this since all of the tools needed to prevent it are provided and freely available. This is why we have placed so much emphasis in this course on data manipulation (`dplyr`), exploratory graphics (`ggplot2`) and using a coherent and reproducible workflow (RStudio). 
+Ceci n'est, bien sûr, pas seulement vrai pour R mais pour tout logiciel d'analyse. Cependant, avec R, vous avez encore moins d'excuses pour agir de la sorte, puisque tous les outils nécessaires pour éviter cela sont fournis et disponibles gratuitement. C'est pourquoi nous avons mis l'accent dans ce cours sur la manipulation des données (`dplyr`), les graphiques exploratoires (`ggplot2`) et l'utilisation d'un workflow cohérent et reproductible (RStudio). 
 
-When doing a PhD, it is also extremely unlikely that a simple hypothesis test will be sufficient for your analysis. It is likely you will need to be doing some statistical modelling, to better explain the patterns and trends in your data. We will learn about this in the next module!
+Lorsque vous effectuez des recherches dans le monde réel, il est extrêmement improbable qu'un simple test d'hypothèse soit suffisant pour votre analyse. Mais ce sont souvent ces tests que l'on vous enseigne dans vos modules de statistique, car ils constituent la première étape vers des modèles statistiques plus largement applicables. Il est probable que vous aurez besoin de faire de la modélisation statistique pour mieux expliquer les modèles et les tendances de vos données. Nous en apprendrons davantage à ce sujet dans le prochain module !
+
+## Exercices
+
+Dans ce module, les exercices sont un peu différents. C'est à vous d'utiliser RStudio pour réaliser les exercices sur votre propre ordinateur.
+
+Vous pouvez télécharger les fichiers dont vous avez besoin [en cliquant sur ce lien ici](https://github.com/stats4sd/R4CCRP_06_StatsTest/blob/main/Module%206%20Exercises.zip?raw=true)
 
 
+Assurez-vous de les décompresser dans un nouveau dossier, puis de démarrer un nouveau fichier de projet basé sur ce dossier, comme nous l'avons appris dans le module précédent.
 
-## References  
+Il se peut que vous deviez installer l'un des paquets utilisés avant de continuer - assurez-vous que vous les avez installés et chargés, en exécutant le premier morceau de code, avant d'essayer de commencer à résoudre les questions !
 
-Video on interpreting p-values (Dr Nic's Maths and Stats):  
+## Références  
+
+Vidéo sur l'interprétation des valeurs p (Dr Nic's Maths and Stats):  
 https://www.youtube.com/watch?v=eyknGvncKLw  
 
-Video on choosing an appropriate test (Dr Nic)
+Vidéo sur le choix d'un test approprié (Dr Nic)
 https://www.youtube.com/watch?v=rulIUAN0U3w
 
-Tutorial on t-tests and non-parametric equivalents (UC Business Analytics R Programming Guide):  
-https://uc-r.github.io/t_test  
+Tutoriel sur les tests t et leurs équivalents non paramétriques (Guide de programmation R pour UC Business Analytics):  
+https://larmarange.github.io/analyse-R/comparaisons-moyennes-et-proportions.html  
 
-Tutorial covering all the tests covered in this session in more detail. (Note - Part I (Chi square tests) is much more complicated in this tutorial than the method we have shown! Suggest only working through Parts II and III)
+Tutoriel couvrant plus en détail tous les tests abordés dans cette session. (Note - La partie I (tests du chi carré) est beaucoup plus compliquée dans ce tutoriel que la méthode que nous avons montrée ! Nous vous suggérons de ne travailler que sur les parties II et III).
 https://sbc.shef.ac.uk/workshops/2019-09-18-stats-r/practical.nb.html
 
 
